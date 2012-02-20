@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = Markable::VERSION
   s.authors     = ["Alex Chrome"]
   s.email       = ["dify.chrome@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/chrome/markable"
   s.summary     = "Marking system for rails app"
   s.description = "Markable allows you to easily create a marking system in your rails application."
 
