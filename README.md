@@ -30,7 +30,6 @@ end
 
 ``` ruby
 # Getters
-
 user.favorite_foods # => [food1, food2, …]
 user.foods_marked_as :favorite # => [food1, food2, …]
 user.foods_marked_as_favorite # => [food1, food2, …]
