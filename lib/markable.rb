@@ -12,7 +12,7 @@ module Markable
 protected
 
   def self.set_models models
-    @@models ||= models
+    @@models = models unless @@models.count > 0
   end
 
   def self.add_markable markable
