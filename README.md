@@ -82,7 +82,7 @@ and The World will know, what kind of food do you hate.
 user.hated_foods << broccoli
 ```
 
-You can easily get list of all foods marked as favorite by your user
+You can easily get list of all food marked as favorite by your user
 
 ``` ruby
 user.foods_marked_as :favorite
@@ -100,7 +100,7 @@ pizza.users_have_marked_as :favorite
 pizza.users_have_marked_as_favorite
 ```
 
-And all foods loved by users
+And all food loved by users
 
 ``` ruby
 Food.marked_as :favorite
