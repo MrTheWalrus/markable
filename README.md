@@ -63,7 +63,6 @@ user.set_mark :favorite, pizza
 user.mark_as_favorite pizza
 # or
 user.favorite_foods << pizza
-# yes, I know that "food" doesn't have a plural form, but rails don't :(
 ```
 
 _— Also I hate broccoli!_

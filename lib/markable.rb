@@ -11,8 +11,8 @@ module Markable
 
 protected
 
-  def self.set_models models
-    @@models = models unless @@models.count > 0
+  def self.set_models
+    @@models = @@models.presence || ActiveRecord::Base.connection.tables.collect{ |t| t.classify rescue nil }.compact
   end
 
   def self.add_markable markable
