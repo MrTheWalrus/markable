@@ -1,3 +1,3 @@
 class Drink < ActiveRecord::Base
-  markable :as => :favorite, :by => :admin
+  markable_as :favorite, :by => :admin
 end

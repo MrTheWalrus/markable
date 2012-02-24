@@ -39,7 +39,7 @@ module Markable
         super
       end
 
-      def set_mark_to mark, markables
+      def set_mark mark, markables
         markables = [ markables ] unless markables.kind_of? Array
         markables.each do |markable|
           Markable.can_mark_or_raise? self, markable, mark
@@ -47,11 +47,11 @@ module Markable
         end
       end
 
-      def remove_mark_from mark, markables
+      def remove_mark mark, markables
         markables = [ markables ] unless markables.kind_of? Array
         Markable.can_mark_or_raise? self, markables, mark
         markables.each do |markable|
-          markable.remove_mark mark, :by => self
+          markable.unmark mark, :by => self
         end
       end
     end

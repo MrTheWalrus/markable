@@ -30,7 +30,7 @@ protected
   def self.create_methods markers, markables
     markables.try :each do |markable|
       markers.try :each do |marker|
-        markable.markable_as.each { |mark, options|
+        markable.markable_marks.each { |mark, options|
           if options[:allowed_markers] == :all || options[:allowed_markers].include?(marker.marker_name)
             markable_name = markable.name.downcase
             method_name = "#{mark}_#{markable_name}".pluralize
@@ -48,7 +48,7 @@ protected
             unless marker.methods.include?("mark_as_#{mark}".to_sym)
               marker.class_eval %(
                 def mark_as_#{mark}(objects)
-                  self.set_mark_to :#{mark}, objects
+                  self.set_mark :#{mark}, objects
                 end
               )
             end
@@ -84,8 +84,8 @@ protected
     marker_name = marker_object.class.name.to_sym
     markable_name = markable_object.class.name.to_sym
 
-    @@markers.include?(marker_name) && @@markables.include?(markable_name) && markable_object.markable_as.include?(mark) && 
-      (markable_object.markable_as[mark][:allowed_markers] == :all || markable_object.markable_as[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
+    @@markers.include?(marker_name) && @@markables.include?(markable_name) && markable_object.markable_marks.include?(mark) && 
+      (markable_object.markable_marks[mark][:allowed_markers] == :all || markable_object.markable_marks[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
   end
 end
 

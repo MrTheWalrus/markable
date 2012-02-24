@@ -1,6 +1,22 @@
 # Markable
 
-Markable allows you to easily create a marking system in your rails application.
+Do your users want to add food, drinks, books, movies, and many
+other stuff to favorites?
+
+_— How should I name this table — users_foods or foods_users?_<br/>
+_— Damn, I forget to add ```:id => false``` to migration again!_<br/>
+_— Holy sh*t! I have to create a lot of tables for this relations!_
+
+Nope, you don't have to create relations or think about migrations — **markable** will handle this.
+
+Should your users be able to add each other to friends? Or do you want to
+make a twitter-like followers system?
+
+_— Oh… Self-relation again…_
+
+Nope, **markable** can handle it too!
+
+
 
 ##Installation
 
@@ -18,13 +34,112 @@ rails generate markable:migration
 rake db:migrate
 ```
 
-## Methods
+## Usage
+
+At first you should define markers — these are models which will mark
+other models.
+
+If User can mark Food as favorite, then User — is a marker.
+
+``` ruby
+class User < ActiveRecord::Base
+  acts_as_marker
+end
+```
+
+Then you should define markables
+
+``` ruby
+class Food < ActiveRecord::Base
+  markable_as :favorite
+end
+```
+
+Thats it! Now you can mark pizza as a favorite food of your user
+
+``` ruby
+user.set_mark :favorite, pizza
+# or
+user.mark_as_favorite pizza
+# or
+user.favorite_foods << pizza
+# yes, I know that "food" doesn't have a plural form, but rails don't :(
+```
+
+_— Also I hate broccoli!_
+
+As you wish! Just a little change to your Food model
+
+``` ruby
+class Food < ActiveRecord::Base
+  markable_as [ :hated, :favorite ]
+end
+```
+
+and The World will know, what kind of food do you hate.
+
+``` ruby
+user.hated_foods << broccoli
+```
+
+You can easily get list of all foods marked as favorite by your user
+
+``` ruby
+user.foods_marked_as :favorite
+# or
+user.foods_marked_as_favorite
+# or
+user.favorite_foods
+```
+
+Also you can get a list of all users, who loves pizza too!
+
+``` ruby
+pizza.users_have_marked_as :favorite
+# or
+pizza.users_have_marked_as_favorite
+```
+
+And all foods loved by users
+
+``` ruby
+Food.marked_as :favorite
+# or
+Food.marked_as_favorite
+```
+
+_— Hmm… What kind of food my friends likes?_
+
+``` ruby
+Food.marked_as_favorite :by => [ user1, user2, user3 ]
+```
+
+_— Hey! I have found a users who loves pizza too — I want to be friends with them!_
+
+No problem! Just make User markable as friendly!
+
+``` ruby
+class User < ActiveRecord::Base
+  acts_as_marker
+  markable_as :friendly, :by => :user
+end
+```
+
+And now you can add all pizza-lovers to your friends
+
+``` ruby
+user.friendly_users << pizza.users_have_marked_as_favorite
+```
+
+Piece of cake!
+
+## All Methods
 ``` ruby
 class User < ActiveRecord::Base
   acts_as_marker
 end
 class Food < ActiveRecord::Base
-  markable :as => :favorite
+  markable_as :favorite
 end
 ```
 
@@ -46,109 +161,29 @@ Food.marked_as_favorite :by => user1 # => [food1, food2, …]
 user.favorite_foods << [food1, food2]
 user.foods_marked_as(:favorite) << [food1, food2]
 user.foods_marked_as_favorite << [food1, food2]
-user.set_mark_to :favorite, [food1, food2]
+user.mark_as_favorite [food1, food2]
+user.set_mark :favorite, [food1, food2]
 
 food.users_have_marked_as(:favorite) << [user1, user2]
 food.users_have_marked_as_favorite << [user1, user2]
 food.mark_as :favorite, [user1, user2]
 
+# Removals
+food.unmark :favorite
+food.unmark :favorite, :by => user1
+food.users_have_marked_as(:favorite).delete [food1, food2]
+food.users_have_marked_as_favorite.delete [food1, food2]
+user.remove_mark :favorite, [food1, food2]
+user.favorite_foods.delete [food1, food2]
+
+# Check
+food.marked_as? :favorite
+food.marked_as_favorite?
 ```
 
 ##Usage examples
 
-### Favorites
-``` ruby
-class User < ActiveRecord::Base
-  acts_as_marker
-end
-class Food < ActiveRecord::Base
-  markable :as => :favorite
-end
-class Drink < ActiveRecord::Base
-  markable :as => :favorite
-end
-
-jonh = User.find_by_name 'John'
-carl = User.find_by_name 'Carl'
-
-pizza = Food.find_by_name 'Pizza'
-
-cake = Food.find_by_name 'Cake'
-cola = Drink.find_by_name 'Cola'
-
-
-jonh.mark_as_favorite [ pizza, cola ]
-john.favorite_foods # => [ pizza ]
-john.favorite_drinks # => [ cola ]
-
-john.favorite_foods << cake
-john.favorite_foods # => [ pizza, cake ]
-
-john.favorite_foods.delete pizza
-john.favorite_foods # => [ cake ]
-
-carl.set_mark_to :favorite, pizza
-
-pizza.users_have_marked_as_favorite # => [ john, carl ]
-Food.marked_as :favorite # => [ pizza, cake ]
-Food.marked_as :favorite, :by => carl # => [ pizza ]
-```
-### Friends
-``` ruby
-class User < ActiveRecord::Base
-  acts_as_marker
-  markable :as => :friendly, :by => :user
-end
-
-john = User.find_by_name 'John'
-carl = User.find_by_name 'Carl'
-
-john.friendly_users << carl
-carl.friendly_users << john
-```
-### Followers
-``` ruby
-class User < ActiveRecord::Base
-  acts_as_marker
-  markable :as => :following, :by => :user
-end
-
-john = User.find_by_name 'John'
-carl = User.find_by_name 'Carl'
-
-carl.mark_as :following, john
-john.following_users # => [ carl ]
-```
-### Restricted access to markables
-``` ruby
-class Boy < ActiveRecord::Base
-  acts_as_marker
-end
-class Girl < ActiveRecord::Base
-  acts_as_marker
-end
-
-class Car < ActiveRecord::Base
-  markable :as => :driving, :by => :boy
-end
-class Dress < ActiveRecord::Base
-  markable :as => :wearing, :by => :girl
-end
-
-john = Boy.find_by_name 'John'
-sally = Girl.find_by_name 'Sally'
-
-ferrari = Car.find_by_name 'Ferrari'
-red_dress = Dress.find_by_name 'Red Dress'
-
-john.driving_cars << ferrari # ok
-sally.wearing_dresses << red_dress # ok
-
-john.driving_cars << red_dress # error
-sally.wearing_dresses << ferrari # error
-john.wearing_dresses # error
-sally.set_mark_to :driving, ferrari # error
-```
+You can find some usage examples at wiki page: [Usage examples](https://github.com/chrome/markable/wiki/Usage-examples)
 
 ## License
 

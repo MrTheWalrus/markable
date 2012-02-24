@@ -1,3 +1,4 @@
 class Food < ActiveRecord::Base
-  markable :as => :favorite
+  markable_as :favorite
+  markable_as :hated, :by => :user
 end

@@ -6,19 +6,23 @@ module Markable
     end
 
     module ClassMethods
-      def markable(options = {})
+      def markable_as(marks, options = {})
         Markable.set_models ActiveRecord::Base.connection.tables.collect{|t| t.classify rescue nil }.compact
 
-        cattr_accessor :markable_as
+        cattr_accessor :markable_marks
+
         if options[:by]
           markers = options[:by].kind_of?(Array) ? options[:by].map { |i| i.to_sym } : [ options[:by].to_sym ]
         else
           markers = :all
         end
 
-        self.markable_as = {}
-        self.markable_as[ (options[:as] || :default).to_sym ] = {
-          :allowed_markers => markers
+        self.markable_marks ||= {}
+        marks = [ marks ] unless marks.kind_of? Array
+        marks.each { |mark|
+          self.markable_marks[ mark.to_sym ] = {
+            :allowed_markers => markers
+          }
         }
 
         class_eval do
@@ -32,13 +36,13 @@ module Markable
               result.class_eval do
                 define_method :<< do |object|
                   if object.kind_of?(markable) || (object.kind_of?(Array) && object.all?{ |i| i.kind_of?(markable) })
-                    options[:by].set_mark_to mark, object
+                    options[:by].set_mark mark, object
                   else
                     raise Markable::WrongMarkableType.new
                   end
                 end
                 define_method :delete do |markable|
-                  options[:by].remove_mark_from mark, markable
+                  options[:by].remove_mark mark, markable
                 end
               end
             else
@@ -48,10 +52,14 @@ module Markable
           end
         end
 
-        self.markable_as.each { |mark, o|
+        self.markable_marks.each { |mark, o|
           class_eval %(
             def self.marked_as_#{mark}(options = {})
               self.marked_as :#{mark}, options
+            end
+
+            def marked_as_#{mark}? options = {}
+              self.marked_as? :#{mark}, options
             end
           )
         }
@@ -77,7 +85,23 @@ module Markable
         true
       end
 
-      def remove_mark mark, options = {}
+      def marked_as?(mark, options = {})
+        if options[:by]
+          Markable.can_mark_or_raise? options[:by], self, mark
+        end
+        params = {
+          :markable_id => self.id,
+          :markable_type => self.class.name,
+          :mark => mark
+        }
+        if options[:by]
+          params[:marker_id] = options[:by].id
+          params[:marker_type] = options[:by].class.name
+        end
+        Markable::Mark.exists?( params )
+      end
+
+      def unmark mark, options = {}
         if options[:by]
           Markable.can_mark_or_raise? options[:by], self, mark
           markers = options[:by].kind_of?(Array) ? options[:by] : [ options[:by] ]
@@ -109,7 +133,7 @@ module Markable
           define_method :<< do |markers|
             markers = [ markers ] unless markers.kind_of? Array
             markers.each { |marker|
-              marker.set_mark_to mark, markable
+              marker.set_mark mark, markable
             }
             self
           end
@@ -117,7 +141,7 @@ module Markable
             Markable.can_mark_or_raise? markers, markable, mark
             markers = [ markers ] unless markers.kind_of? Array
             markers.each { |marker|
-              marker.remove_mark_from mark, markable
+              marker.remove_mark mark, markable
             }
             self
           end
