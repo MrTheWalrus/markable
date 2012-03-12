@@ -2,17 +2,13 @@ module Markable
   module ActsAsMarkable
     extend ActiveSupport::Concern
 
-    included do |a|
-    end
-
     module ClassMethods
       def markable_as(marks, options = {})
         Markable.set_models
 
         cattr_accessor :markable_marks, :instance_writer => false
 
-        marks = Array.wrap(marks)
-        raise Markable::WrongMarkType unless marks.all?{ |mark| mark.kind_of? Symbol}
+        marks = Array.wrap(marks).map!{|i| i.to_sym }
 
         markers = options[:by].present? ? Array.wrap(options[:by]) : :all
 
@@ -33,11 +29,7 @@ module Markable
               markable = self
               result.class_eval do
                 define_method :<< do |object|
-                  if Array.wrap(object).all?{ |i| i.kind_of?(markable) }
-                    options[:by].set_mark mark, object
-                  else
-                    raise Markable::WrongMarkableType.new
-                  end
+                  options[:by].set_mark mark, object
                   self
                 end
                 define_method :delete do |markable|
@@ -48,7 +40,7 @@ module Markable
             else
               result = self.joins(:markable_marks).where( :marks => { :mark => mark } )
             end
-            result
+            result.group("#{self.table_name}.id")
           end
         }
 

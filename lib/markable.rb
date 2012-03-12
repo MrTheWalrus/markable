@@ -16,14 +16,14 @@ protected
   end
 
   def self.add_markable markable
-    @@markable_objects.push markable
-    @@markables.push markable.name.to_sym
+    @@markable_objects.push markable unless @@markable_objects.include? markable
+    @@markables.push markable.name.to_sym unless @@markables.include? markable.name.to_sym
     create_methods @@marker_objects, [ markable ]
   end
 
   def self.add_marker marker
-    @@marker_objects.push marker
-    @@markers.push marker.name.to_sym
+    @@marker_objects.push marker unless @@marker_objects.include? marker
+    @@markers.push marker.name.to_sym unless @@markers.include? marker.name.to_sym
     create_methods [ marker ], @@markable_objects
   end
 
@@ -67,25 +67,25 @@ protected
     end
   end
 
-  def self.can_mark_or_raise? marker_object, markables, mark
-    unless self.can_mark? marker_object, markables, mark
-      raise Markable::WrongMarkableType.new
-    end
-    true
-  end
-
-  def self.can_mark? markers, markables, mark
-    markables = [ markables ] unless markables.kind_of? Array
-    markers = [ markers ] unless markers.kind_of? Array
-    markers.all? { |marker_object| markables.all? { |markable| self.can_mark_object?(marker_object, markable, mark) } }
+  def self.can_mark_or_raise? markers, markables, mark
+    Array.wrap(markers).all? { |marker_object|
+      Array.wrap(markables).all? { |markable|
+        self.can_mark_object?(marker_object, markable, mark)
+      }
+    }
   end
 
   def self.can_mark_object? marker_object, markable_object, mark
     marker_name = marker_object.class.name.to_sym
     markable_name = markable_object.class.name.to_sym
+    raise Markable::WrongMarkerType.new(marker_name) unless @@markers.include?(marker_name)
+    raise Markable::WrongMarkableType.new(markable_name) unless @@markables.include?(markable_name)
+    raise Markable::WrongMark.new(marker_object, markable_object, mark) unless markable_object.markable_marks.include?(mark)
 
-    @@markers.include?(marker_name) && @@markables.include?(markable_name) && markable_object.markable_marks.include?(mark) && 
-      (markable_object.markable_marks[mark][:allowed_markers] == :all || markable_object.markable_marks[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
+    raise Markable::NotAllowedMarker.new(marker_object, markable_object, mark) unless (markable_object.markable_marks[mark][:allowed_markers] == :all ||
+                                                                  markable_object.markable_marks[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
+
+    true
   end
 end
 

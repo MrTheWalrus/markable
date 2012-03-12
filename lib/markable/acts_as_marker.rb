@@ -2,9 +2,6 @@ module Markable
   module ActsAsMarker
     extend ActiveSupport::Concern
 
-    included do
-    end
-
     module ClassMethods
       def acts_as_marker(options = {})
         Markable.set_models

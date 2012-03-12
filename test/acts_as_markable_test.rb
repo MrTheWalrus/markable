@@ -149,7 +149,7 @@ class ActsAsMarkableTest < ActiveSupport::TestCase
     user1 = User.create :name => 'User1'
     drink1 = Drink.create :name => 'Drink1'
 
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::NotAllowedMarker) {
       user1.mark_as_favorite drink1
     }
   end
@@ -200,10 +200,10 @@ class ActsAsMarkableTest < ActiveSupport::TestCase
     assert_raise(NoMethodError) {
       markable.users_have_marked_as_favorite
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::NotAllowedMarker) {
       markable.admins_have_marked_as_favorite << marker
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::NotAllowedMarker) {
       markable.mark_as :favorite, marker
     }
   end

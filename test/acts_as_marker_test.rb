@@ -98,10 +98,10 @@ class ActsAsMarkerTest < ActiveSupport::TestCase
     assert_raise(NoMethodError) {
       markable.users_have_marked_as_favorite
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::NotAllowedMarker) {
       marker.favorite_foods << markable
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::NotAllowedMarker) {
       marker.set_mark :favorite, markable
     }
   end
@@ -110,13 +110,13 @@ class ActsAsMarkerTest < ActiveSupport::TestCase
     marker1 = User.create :name => 'marker'
     marker2 = User.create :name => 'marker'
 
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMark) {
       marker1.set_mark :favorite, marker2
     }
     assert_raise(Markable::WrongMarkableType) {
       marker1.set_mark :favorite, 'STRING'
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMark) {
       marker1.favorite_foods << marker2
     }
     assert_raise(Markable::WrongMarkableType) {
@@ -132,27 +132,27 @@ class ActsAsMarkerTest < ActiveSupport::TestCase
     assert_equal [f1, f2], u1.favorite_foods
     assert_equal [f1, f2], u2.favorite_foods
 
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMarkerType) {
       f1.users_have_marked_as_favorite.delete(f2)
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMarkerType) {
       f1.users_have_marked_as_favorite.delete('STRING')
     }
     assert_raise(NoMethodError) {
       u1.users_have_marked_as_favorite.delete(u2)
     }
 
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMarkerType) {
       f1.unmark :favorite, :by => f2
     }
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMarkerType) {
       f1.unmark :favorite, :by => 'STRING'
     }
     assert_raise(Markable::WrongMarkableType, NoMethodError) {
       u1.remove_mark :favorite, :by => f1
     }
 
-    assert_raise(Markable::WrongMarkableType) {
+    assert_raise(Markable::WrongMark) {
       u1.favorite_foods.delete u2
     }
     assert_raise(Markable::WrongMarkableType) {
