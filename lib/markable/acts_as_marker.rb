@@ -5,14 +5,15 @@ module Markable
     module ClassMethods
       def acts_as_marker(options = {})
         Markable.set_models
-
-        cattr_accessor :marker_name, :instance_writer => false
+        class_eval {
+          class << self
+            attr_accessor :marker_name
+          end
+        }
         self.marker_name = self.name.downcase.to_sym
 
         class_eval do
           has_many :marker_marks, :class_name => 'Markable::Mark', :as => :marker
-        end
-        class_eval do
           include Markable::ActsAsMarker::MarkerInstanceMethods
         end
         Markable.add_marker self
@@ -26,7 +27,7 @@ module Markable
               method_sym.to_s =~ Regexp.new("^#{model_name.downcase.pluralize}_marked_as(_[\\w_]+)?$")
             model_name.constantize # ping model
             if self.methods.include? method_sym # method has appear
-              return args.count > 0 ? self.method(method_sym).call(args) : self.method(method_sym).call # call this method
+              return self.method(method_sym).call(*args) # call this method
             end
           end
         }

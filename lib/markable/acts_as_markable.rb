@@ -6,15 +6,19 @@ module Markable
       def markable_as(marks, options = {})
         Markable.set_models
 
-        cattr_accessor :markable_marks, :instance_writer => false
+        class_eval {
+          class << self
+            attr_accessor :__markable_marks
+          end
+        }
 
         marks = Array.wrap(marks).map!{|i| i.to_sym }
 
         markers = options[:by].present? ? Array.wrap(options[:by]) : :all
 
-        self.markable_marks ||= {}
+        self.__markable_marks ||= {}
         marks.each { |mark|
-          self.markable_marks[mark] = {
+          self.__markable_marks[mark] = {
             :allowed_markers => markers
           }
         }
@@ -44,7 +48,7 @@ module Markable
           end
         }
 
-        self.markable_marks.each { |mark, o|
+        self.__markable_marks.each { |mark, o|
           class_eval %(
             def self.marked_as_#{mark} options = {}
               self.marked_as :#{mark}, options

@@ -5,20 +5,20 @@ class ActsAsMarkableTest < ActiveSupport::TestCase
   # Config tests
 
   test "a drink's markable_marks[:favorite] should not be nil" do
-    assert_not_nil Drink.markable_marks[:favorite]
+    assert_not_nil Drink.__markable_marks[:favorite]
   end
 
   test "a food's markable_marks[:favorite] should not be nil" do
-    assert_not_nil Food.markable_marks[:favorite]
-    assert_not_nil Food.markable_marks[:hated]
+    assert_not_nil Food.__markable_marks[:favorite]
+    assert_not_nil Food.__markable_marks[:hated]
   end
 
   test "a food's markable_marks[:favorite][:allowed_markers] should be :all" do
-    assert_equal :all, Food.markable_marks[:favorite][:allowed_markers]
+    assert_equal :all, Food.__markable_marks[:favorite][:allowed_markers]
   end
 
   test "a drink's markable_marks[:favorite][:allowed_markers] should be [:admin]" do
-    assert_equal [:admin], Drink.markable_marks[:favorite][:allowed_markers]
+    assert_equal [:admin], Drink.__markable_marks[:favorite][:allowed_markers]
   end
 
   test "a user favorite 2 types of food and 1 drink, favorite_foods should contain both foods, favorite_drinks should contain 1 drink" do

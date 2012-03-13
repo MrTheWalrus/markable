@@ -7,7 +7,7 @@ module Markable
 
   class NotAllowedMarker < Exception
     def initialize(marker, markable, mark)
-      super "Marker '#{marker.class.name}' is not allowed to mark '#{markable.class.name}' with mark '#{mark}'. Allowed markers: '#{markable.markable_marks[mark][:allowed_markers].join("', '")}'"
+      super "Marker '#{marker.class.name}' is not allowed to mark '#{markable.class.name}' with mark '#{mark}'. Allowed markers: '#{markable.class.__markable_marks[mark][:allowed_markers].join("', '")}'"
     end
   end
   class WrongMarkerType < Exception
@@ -18,7 +18,7 @@ module Markable
 
   class WrongMark < Exception
     def initialize(marker, markable, mark)
-      super "Wrong mark '#{mark}' for '#{markable.class.name}'. Available marks: '#{markable.markable_marks.keys.join("', '")}'"
+      super "Wrong mark '#{mark}' for '#{markable.class.name}'. Available marks: '#{markable.class.__markable_marks.keys.join("', '")}'"
     end
   end
 end

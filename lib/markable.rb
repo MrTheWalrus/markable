@@ -30,7 +30,7 @@ protected
   def self.create_methods markers, markables
     markables.try :each do |markable|
       markers.try :each do |marker|
-        markable.markable_marks.each { |mark, options|
+        markable.__markable_marks.each { |mark, options|
           if options[:allowed_markers] == :all || options[:allowed_markers].include?(marker.marker_name)
             markable_name = markable.name.downcase
             method_name = "#{mark}_#{markable_name}".pluralize
@@ -80,10 +80,10 @@ protected
     markable_name = markable_object.class.name.to_sym
     raise Markable::WrongMarkerType.new(marker_name) unless @@markers.include?(marker_name)
     raise Markable::WrongMarkableType.new(markable_name) unless @@markables.include?(markable_name)
-    raise Markable::WrongMark.new(marker_object, markable_object, mark) unless markable_object.markable_marks.include?(mark)
+    raise Markable::WrongMark.new(marker_object, markable_object, mark) unless markable_object.class.__markable_marks.include?(mark)
 
-    raise Markable::NotAllowedMarker.new(marker_object, markable_object, mark) unless (markable_object.markable_marks[mark][:allowed_markers] == :all ||
-                                                                  markable_object.markable_marks[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
+    raise Markable::NotAllowedMarker.new(marker_object, markable_object, mark) unless (markable_object.class.__markable_marks[mark][:allowed_markers] == :all ||
+                                                                  markable_object.class.__markable_marks[mark][:allowed_markers].include?(marker_name.to_s.downcase.to_sym))
 
     true
   end
