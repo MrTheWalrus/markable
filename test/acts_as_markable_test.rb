@@ -216,4 +216,20 @@ class ActsAsMarkableTest < ActiveSupport::TestCase
     assert_equal [ markable ], marker.favorite_foods
     assert_equal [ marker ], markable.users_have_marked_as_favorite
   end
+
+  test "count should return number" do
+    u = get(User)
+    f = get(Food)
+    u.favorite_foods << f
+    assert_equal u.favorite_foods.count, 1
+  end
+
+  test "Food.marked_as_favorite should not return duplicate values" do
+    u1, u2, u3 = get(User, 3)
+    f1, f2 = get(Food, 2)
+    f1.users_have_marked_as_favorite << [u1, u2, u3]
+    f2.users_have_marked_as_favorite << [u1, u2]
+    assert_equal Food.marked_as_favorite, [f1, f2]
+    assert_equal Food.marked_as_favorite.count.count, 2
+  end
 end

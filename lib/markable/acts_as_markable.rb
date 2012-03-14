@@ -42,9 +42,9 @@ module Markable
                 end
               end
             else
-              result = self.joins(:markable_marks).where( :marks => { :mark => mark } )
+              result = self.joins(:markable_marks).where( :marks => { :mark => mark } ).group("#{self.table_name}.id")
             end
-            result.group("#{self.table_name}.id")
+            result
           end
         }
 
